@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+
+Crawl-delay: 2
+
+Sitemap: https://keystonedentalcare.in/sitemap.xml
