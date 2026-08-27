@@ -186,7 +186,7 @@ function DashboardContent() {
 
         const mapped = {};
         (data || []).forEach((row) => {
-          const key = `${row.booking_date}-${row.time_slot}`;
+          const key = `${row.booking_date}_${row.time_slot}`;
           if (!mapped[key]) mapped[key] = [];
           mapped[key].push({
             id: row.id,
