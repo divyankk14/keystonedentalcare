@@ -6,28 +6,46 @@ export default function Reviews() {
 
   const reviewsList = [
     {
-      name: 'Priyanka Patil',
-      text: 'Dr. Sayali Dethe is very professional and patient. She explained the entire root canal procedure before starting. The treatment was absolutely painless! Highly recommended.',
+      name: 'Gautami Mamidi',
+      text: 'I have done my root canal treatment from Keystone. Dr. Dethe is so polite and gentle. I would highly recommend to keystone dental care clinic.',
       rating: 5,
       date: '1 week ago',
     },
     {
-      name: 'Aditya Mehta',
-      text: 'Got my dental implants done at Keystone Dental Care. The clinic has state-of-the-art facilities and is extremely clean. Excellent hygiene standards and brilliant doctor support.',
+      name: 'SHIVANI GAIKWAD',
+      text: "I had a great experience with Dr. Sayli dethe. She's very caring and gentle, making me feel comfortable during my appointment. Her friendly demeanor and willingness to listen put me at ease. The staff was also welcoming and helpful. I appreciate her compassionate approach and recommend her to anyone looking for a kind and understanding dentist!.",
       rating: 5,
       date: '3 weeks ago',
     },
     {
-      name: 'Sneha Kulkarni',
-      text: 'Brought my 7-year-old daughter for checkup. Dr. Sayali is so friendly and gentle with children! My daughter was not scared at all. Clean and comfortable clinic.',
+      name: 'Mansha Tungekar',
+      text: 'Visited the clinic. Very warm and nice ambience. Dr. Sayali Dethe is also very cordial and understands patients need.',
       rating: 5,
       date: '1 month ago',
     },
     {
-      name: 'Vikram Joshi',
-      text: 'Best clinic for scaling and cleaning. Very reasonable pricing and Dr. Sayali gives honest advice without suggesting unnecessary treatments. Satisfied with the service!',
+      name: 'Amit Bikram',
+      text: "Amazing Hospitality, I recently had my root canal treatment there. Amazing work by the doctor i must say. She's very professional.",
       rating: 5,
       date: '2 months ago',
+    },
+    {
+      name: 'Vinit Khanvilkar',
+      text: 'The facilities were clean and modern, and the dentist was incredibly knowledgeable and skilled. She took the time to thoroughly explain the treatment plan and address any concerns I had. Throughout the procedure, she was gentle and attentive, making sure I was comfortable at all times.',
+      rating: 5,
+      date: 'Recent',
+    },
+    {
+      name: 'Priyanka Shete',
+      text: 'My experience was very Good, Doctor is very cooperative and experience',
+      rating: 5,
+      date: '3 weeks ago',
+    },
+    {
+      name: 'Meena Kedari',
+      text: 'I did my teeth cleaning. I had a good experience. I recommend Dr. Sayali for her professionalism.',
+      rating: 5,
+      date: 'Recent',
     },
   ];
 
@@ -41,7 +59,7 @@ export default function Reviews() {
   return (
     <section className="py-20 bg-brand-ivory/50 border-t border-b border-brand-sage/10 overflow-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-xl mx-auto mb-12">
           <span className="text-xs uppercase tracking-widest text-brand-coral font-bold block mb-2">Testimonials</span>
@@ -58,7 +76,7 @@ export default function Reviews() {
           </div>
 
           <div className="flex flex-col items-center text-center">
-            
+
             {/* Stars */}
             <div className="flex text-brand-coral mb-4">
               {[...Array(reviewsList[activeIdx].rating)].map((_, i) => (
@@ -89,9 +107,8 @@ export default function Reviews() {
               <button
                 key={idx}
                 onClick={() => setActiveIdx(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  activeIdx === idx ? 'bg-brand-coral w-4' : 'bg-brand-sage/30 hover:bg-brand-sage/50'
-                }`}
+                className={`w-2 h-2 rounded-full transition-all ${activeIdx === idx ? 'bg-brand-coral w-4' : 'bg-brand-sage/30 hover:bg-brand-sage/50'
+                  }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />
             ))}

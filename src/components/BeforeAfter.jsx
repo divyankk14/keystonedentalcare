@@ -16,38 +16,62 @@ export default function BeforeAfter() {
       image: '/images/before after/1000293878.jpg'
     },
     {
-      title: 'Aesthetic Smile Makeover',
-      category: 'Cosmetic',
-      description: 'Porcelain veneers and crown restorations.',
+      title: 'Dental Crowns',
+      category: 'Prosthodontics',
+      description: 'Custom-made dental crowns that restore strength, function, and natural aesthetics.',
       image: '/images/before after/1000293875.jpg'
     },
     {
-      title: 'Implant & Crown Restorations',
+      title: 'Dental Implants',
       category: 'Implants',
-      description: 'Single and multi-tooth permanent implant setups.',
-      image: '/images/before after/1000293879.jpg'
+      description: 'A durable, natural-looking solution to restore missing teeth, function, and confidence.',
+      image: '/images/before after/InShot_20260831_184615703.jpg'
     },
     {
-      title: 'Composite & Cosmetic Filling',
+      title: 'Composite Restoration',
       category: 'Restorative',
-      description: 'Natural tooth-coloured composite restoration.',
+      description: 'Restoring decayed teeth with natural-looking aesthetics and function.',
       image: '/images/before after/1000293863.jpg'
     },
     {
-      title: 'Gingivoplasty Treatment',
+      title: 'Gingivoplasty',
       category: 'Gum Care',
-      description: 'Reshaping gum tissue for a balanced aesthetic smile.',
-      image: '/images/before after/1000293906.jpg'
+      description: 'Reshaping the gum line to create a more balanced, symmetrical, and aesthetically pleasing smile.',
+      image: '/images/before after/1000289706.jpg'
     },
     {
       title: 'Gingival Depigmentation',
-      category: 'Gum Care',
-      description: 'Removal of dark spots for healthy pink gums.',
+      category: 'Cosmetic',
+      description: 'Minimally invasive aesthetic gum treatment to reduce pigmentation and enhance your smile.',
       image: '/images/before after/1000293912.jpg'
+    },
+    {
+      title: 'Dentures',
+      category: 'Prosthodontics',
+      description: 'Restoring missing teeth to improve chewing, speech, comfort, and confidence.',
+      image: '/images/before after/1000293915.jpg'
+    },
+    {
+      title: 'Operculectomy',
+      category: 'Oral Surgery',
+      description: 'Removal of excess gum tissue over a partially erupted wisdom tooth to relieve discomfort and support oral health.',
+      image: '/images/before after/1000293859.jpg'
+    },
+    {
+      title: 'Gingivectomy',
+      category: 'Gum Care',
+      description: 'Precise removal of excess gum tissue to improve gum health.',
+      image: '/images/before after/1000293880.jpg'
+    },
+    {
+      title: 'Extraction',
+      category: 'Oral Surgery',
+      description: 'Safe and gentle removal of teeth that are non-restorable.',
+      image: '/images/before after/InShot_20260715_193255696.jpg'
     }
   ];
 
-  const categories = ['All', 'Orthodontics', 'Cosmetic', 'Implants', 'Restorative', 'Gum Care'];
+  const categories = ['All', 'Orthodontics', 'Cosmetic', 'Implants', 'Prosthodontics', 'Restorative', 'Gum Care', 'Oral Surgery'];
 
   const filteredCases = activeCategory === 'All' 
     ? cases 

@@ -28,14 +28,14 @@ export default function Header({ view, setView }) {
       <header className="sticky top-0 z-50 bg-white text-brand-dark border-b border-brand-sage/20 backdrop-blur-md bg-opacity-95 shadow-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         
-        {/* Logo and Brand Name */}
+        {/* Logo */}
         <a 
           href="#home" 
           onClick={(e) => { e.preventDefault(); handleNavClick('#home'); }}
-          className="flex items-center gap-3.5 group"
+          className="flex items-center group"
         >
           <img 
-            src="/images/logo only.jpg" 
+            src="/images/logo.jpg" 
             alt="Keystone Dental Care Logo" 
             className="h-12 md:h-16 object-contain rounded-md transition-transform group-hover:scale-105"
           />

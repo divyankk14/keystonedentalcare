@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, Phone, Check, CalendarDays, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { sendSMS } from '../lib/sms';
 
-// Dr. Sayali Dethe's clinic hours:
-// Morning block: 10:00 AM - 2:00 PM (slots: 10, 11, 12, 13)
-// Evening block: 5:00 PM - 9:00 PM (slots: 17, 18, 19, 20)
-const SLOT_HOURS = [10, 11, 12, 13, 17, 18, 19, 20];
+// Morning block: 10:00 AM - 2:00 PM
+// Evening block: 5:00 PM - 9:00 PM
+const SLOT_HOURS = [
+  1000, 1030, 1100, 1130, 1200, 1230, 1300, 1330,
+  1700, 1730, 1800, 1830, 1900, 1930, 2000, 2030
+];
 
 function formatHour(h) {
-  const period = h >= 12 ? 'PM' : 'AM';
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${hour12}:00 ${period}`;
+  const hour = Math.floor(h / 100);
+  const minutes = h % 100;
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  const mm = minutes === 0 ? '00' : '30';
+  return `${hour12}:${mm} ${period}`;
 }
 
 function getDates() {
@@ -192,6 +198,19 @@ export default function BookingForm() {
         });
       }
 
+      // Send SMS Notifications
+      const formattedDate = `${dayLabel(selectedDate)}, ${dateLabel(selectedDate)}`;
+      const formattedTime = formatHour(selectedHour);
+      
+      const clientMsg = `Hi ${name.trim()}, your appointment with Dr. Sayali Dethe at Keystone Dental Care is confirmed for ${formattedDate} at ${formattedTime}.`;
+      await sendSMS(phone.trim(), clientMsg);
+
+      const adminPhone = import.meta.env.VITE_ADMIN_PHONE_NUMBER;
+      if (adminPhone) {
+        const adminMsg = `New Booking: ${name.trim()} (${phone.trim()}) on ${formattedDate} at ${formattedTime}.`;
+        await sendSMS(adminPhone, adminMsg);
+      }
+
       // Reset form fields
       setSelectedHour(null);
       setName('');
@@ -255,7 +274,7 @@ export default function BookingForm() {
       <div className="text-center max-w-xl mx-auto mb-12">
         <span className="text-xs uppercase tracking-widest text-brand-coral font-bold block mb-2">Scheduling</span>
         <h2 className="font-serif text-3xl font-bold text-brand-tealDeep">Book an Appointment</h2>
-        <p className="text-brand-sage text-sm font-light mt-2">
+        <p className="text-brand-dark/80 text-sm font-medium leading-relaxed mt-2">
           Select an available day and time slot to book your visit with Dr. Sayali Dethe.
         </p>
       </div>
@@ -318,7 +337,8 @@ export default function BookingForm() {
               // Disable past slots: if today is selected and the hour has already passed
               const now = new Date();
               const isToday = dateStr === dateKey(now);
-              const isPast = isToday && now.getHours() >= h;
+              const nowTime = now.getHours() * 100 + now.getMinutes();
+              const isPast = isToday && nowTime >= h;
 
               const taken = bookedSlots.includes(h);
               const unavailable = taken || isPast;
@@ -356,11 +376,11 @@ export default function BookingForm() {
           
           <div className="grid sm:grid-cols-2 gap-4 mb-6">
             <div>
-              <label htmlFor="patient-name" className="block text-[10px] font-bold uppercase tracking-widest text-brand-sage mb-1.5">
+              <label htmlFor="patient-name" className="block text-[11px] font-bold uppercase tracking-widest text-brand-tealDeep mb-1.5">
                 Full Name
               </label>
-              <div className="flex items-center gap-2.5 rounded-xl border border-brand-sage/15 px-3.5 py-3 focus-within:border-brand-coral transition-colors">
-                <User size={16} className="text-brand-sage" />
+              <div className="flex items-center gap-2.5 rounded-xl border border-brand-sage/25 px-3.5 py-3 focus-within:border-brand-coral focus-within:ring-2 focus-within:ring-brand-coral/15 transition-colors">
+                <User size={16} className="text-brand-tealDeep" />
                 <input
                   id="patient-name"
                   type="text"
@@ -368,17 +388,17 @@ export default function BookingForm() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Rahul Sharma"
-                  className="w-full text-xs outline-none bg-transparent text-brand-dark font-medium placeholder-brand-sage/60"
+                  className="w-full text-sm outline-none bg-transparent text-brand-dark font-semibold placeholder-brand-dark/55"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="patient-phone" className="block text-[10px] font-bold uppercase tracking-widest text-brand-sage mb-1.5">
+              <label htmlFor="patient-phone" className="block text-[11px] font-bold uppercase tracking-widest text-brand-tealDeep mb-1.5">
                 Mobile Number
               </label>
-              <div className="flex items-center gap-2.5 rounded-xl border border-brand-sage/15 px-3.5 py-3 focus-within:border-brand-coral transition-colors">
-                <Phone size={16} className="text-brand-sage" />
+              <div className="flex items-center gap-2.5 rounded-xl border border-brand-sage/25 px-3.5 py-3 focus-within:border-brand-coral focus-within:ring-2 focus-within:ring-brand-coral/15 transition-colors">
+                <Phone size={16} className="text-brand-tealDeep" />
                 <input
                   id="patient-phone"
                   type="tel"
@@ -387,7 +407,7 @@ export default function BookingForm() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="10-digit number"
-                  className="w-full text-xs outline-none bg-transparent text-brand-dark font-medium placeholder-brand-sage/60"
+                  className="w-full text-sm outline-none bg-transparent text-brand-dark font-semibold placeholder-brand-dark/55"
                 />
               </div>
             </div>
@@ -402,7 +422,7 @@ export default function BookingForm() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full sm:w-auto bg-brand-teal hover:bg-brand-light-teal text-brand-ivory px-8 py-3.5 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full sm:w-auto bg-brand-tealDeep hover:bg-brand-teal text-brand-ivory px-8 py-3.5 rounded-full text-sm font-bold tracking-wider uppercase transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {submitting ? (
               <>

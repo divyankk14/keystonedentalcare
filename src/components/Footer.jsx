@@ -4,10 +4,10 @@ import { Phone, MapPin, Clock, MessageSquare, ExternalLink } from 'lucide-react'
 export default function Footer() {
   return (
     <footer id="contact" className="bg-brand-dark text-brand-ivory/95 border-t border-brand-sage/10">
-      
+
       {/* Contact & Map Section */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 grid lg:grid-cols-12 gap-12">
-        
+
         {/* Contact Info (5 columns) */}
         <div className="lg:col-span-5 flex flex-col justify-between">
           <div>
@@ -17,7 +17,7 @@ export default function Footer() {
               </div>
               <span className="font-serif text-lg font-bold tracking-tight">Keystone Dental Care</span>
             </div>
-            
+
             <p className="text-brand-sage text-xs font-light leading-relaxed mb-8 max-w-sm">
               Providing premium, personalized dental services in Mumbai. We are committed to clinical excellence, patient-first care, and absolute hygiene.
             </p>
@@ -27,7 +27,7 @@ export default function Footer() {
                 <MapPin className="text-brand-coral shrink-0 mt-0.5" size={16} />
                 <div>
                   <span className="font-semibold block mb-1">Our Location:</span>
-                  <a 
+                  <a
                     href="https://maps.google.com/?q=Keystone+Dental+Care+Shop+No+5+Laxmi+Narayan+CHS+Prabhadevi+Mumbai"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -63,7 +63,7 @@ export default function Footer() {
               </div>
             </div>
           </div>
-          
+
           <div className="border-t border-brand-sage/10 pt-6 mt-8 text-[11px] text-brand-sage">
             &copy; {new Date().getFullYear()} Keystone Dental Care. All rights reserved.
           </div>
@@ -72,14 +72,14 @@ export default function Footer() {
         {/* Map Embed (7 columns) */}
         <div className="lg:col-span-7 h-80 lg:h-auto rounded-3xl overflow-hidden border border-brand-sage/15 relative bg-brand-teal/5">
           {/* Embedding a real Google Map of Prabhadevi, Mumbai area */}
-          <iframe 
+          <iframe
             title="Keystone Dental Care Location Map"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3772.1332845688537!2d72.825227!3d19.013898!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7cecb6b7b7fbf%3A0xe188b43bd12e84d4!2sElanza%20Tower%2C%20Sayani%20Rd%2C%20Prabhadevi%2C%20Mumbai%2C%20Maharashtra%20400025!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
-            width="100%" 
-            height="100%" 
-            style={{ border: 0 }} 
-            allowFullScreen="" 
-            loading="lazy" 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3772.1332845688537!2d72.825227!3d19.013898!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7cecb6b7b7fbf%3A0xe188b43bd12e84d4!2sElanza%20Tower%2C%20Sayani%20Rd%2C%20Prabhadevi%2C%20Mumbai%2C%20Maharashtra%20400025!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             className="filter grayscale opacity-90 contrast-125"
           ></iframe>

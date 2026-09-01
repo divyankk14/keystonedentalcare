@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, X, Trash2, Pencil, CalendarDays, Loader2, RefreshCw, Search, Move } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { sendSMS } from '../lib/sms';
 
-const SLOT_HOURS = [10, 11, 12, 13, 17, 18, 19, 20];
+const SLOT_HOURS = [
+  1000, 1030, 1100, 1130, 1200, 1230, 1300, 1330,
+  1700, 1730, 1800, 1830, 1900, 1930, 2000, 2030
+];
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'smile123';
 
 function formatHour(h) {
-  const period = h >= 12 ? 'PM' : 'AM';
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${hour12}:00 ${period}`;
+  const hour = Math.floor(h / 100);
+  const minutes = h % 100;
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  const mm = minutes === 0 ? '00' : '30';
+  return `${hour12}:${mm} ${period}`;
 }
 
 function getDates(offsetWeeks = 0) {
@@ -311,6 +318,15 @@ function DashboardContent() {
 
         if (cancelErr) throw cancelErr;
       }
+
+      // Send SMS
+      if (modal.existing?.phone) {
+        const formattedDate = `${dayLabel(modal.date)}, ${dateLabel(modal.date)}`;
+        const formattedTime = formatHour(modal.hour);
+        const cancelMsg = `Hi ${modal.existing.name}, your appointment at Keystone Dental Care on ${formattedDate} at ${formattedTime} has been cancelled. Please contact us to reschedule.`;
+        await sendSMS(modal.existing.phone, cancelMsg);
+      }
+
       setModal(null);
       loadBookings();
     } catch (err) {
@@ -342,9 +358,9 @@ function DashboardContent() {
     setDragOverCell(null);
     const targetKey = `${dateKey(targetDate)}_${targetHour}`;
     
-    // Check if slot has reached capacity (2 bookings)
-    if (bookings[targetKey] && bookings[targetKey].length >= 2) {
-      alert('Target slot already has 2 bookings. Please choose another slot.');
+    // Check if slot has reached capacity (1 booking)
+    if (bookings[targetKey] && bookings[targetKey].length >= 1) {
+      alert('Target slot already has a booking. Please choose another slot.');
       return;
     }
 
@@ -415,7 +431,7 @@ function DashboardContent() {
   const totalBookings = React.useMemo(() => {
     const now = new Date();
     const nowStr = now.toISOString().split('T')[0];
-    const nowHour = now.getHours();
+    const nowTime = now.getHours() * 100 + now.getMinutes();
     
     let count = 0;
     Object.keys(bookings).forEach((key) => {
@@ -425,7 +441,7 @@ function DashboardContent() {
       const dateStrPart = key.substring(0, underscoreIdx);
       const hourPart = parseInt(key.substring(underscoreIdx + 1), 10);
       
-      if (dateStrPart > nowStr || (dateStrPart === nowStr && hourPart >= nowHour)) {
+      if (dateStrPart > nowStr || (dateStrPart === nowStr && hourPart >= nowTime)) {
         count += (bookings[key] || []).length;
       }
     });
@@ -483,7 +499,7 @@ function DashboardContent() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative">
           {/* Phone/Name search input */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-sage" size={15} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-tealDeep" size={15} />
             <input
               type="text"
               placeholder="Search by name or phone..."
@@ -493,7 +509,7 @@ function DashboardContent() {
                 setShowSearchResults(true);
               }}
               onFocus={() => setShowSearchResults(true)}
-              className="w-full sm:w-60 text-xs rounded-xl border border-brand-sage/15 pl-9 pr-8 py-2.5 outline-none focus:border-brand-coral bg-white text-brand-dark font-medium placeholder-brand-sage/60"
+              className="w-full sm:w-60 text-sm rounded-xl border border-brand-sage/25 pl-9 pr-8 py-2.5 outline-none focus:border-brand-coral focus:ring-2 focus:ring-brand-coral/15 bg-white text-brand-dark font-semibold placeholder-brand-dark/55"
             />
             {searchQuery && (
               <button 
@@ -527,7 +543,7 @@ function DashboardContent() {
                         <span className="font-bold text-brand-tealDeep text-[11px]">{b.name}</span>
                         <span className="text-[10px] text-brand-dark/70 flex items-center gap-1.5">
                           <span>{b.phone}</span>
-                          <span className="text-brand-coral font-semibold">({dateDisplay} at {parseInt(key.substring(key.indexOf('_') + 1), 10)}:00)</span>
+                          <span className="text-brand-coral font-semibold">({dateDisplay} at {formatHour(parseInt(key.substring(key.indexOf('_') + 1), 10))})</span>
                         </span>
                       </button>
                     ));
@@ -573,7 +589,7 @@ function DashboardContent() {
                 {(() => {
                   const now = new Date();
                   const nowStr = now.toISOString().split('T')[0];
-                  const nowHour = now.getHours();
+                  const nowTime = now.getHours() * 100 + now.getMinutes();
 
                   // Collect ALL bookings — past and upcoming — as permanent records
                   const allBookings = [];
@@ -583,7 +599,7 @@ function DashboardContent() {
                     const dateStrPart = key.substring(0, underscoreIdx);
                     const hourPart = parseInt(key.substring(underscoreIdx + 1), 10);
                     const slotBookings = bookings[key] || [];
-                    const isPast = dateStrPart < nowStr || (dateStrPart === nowStr && hourPart < nowHour);
+                    const isPast = dateStrPart < nowStr || (dateStrPart === nowStr && hourPart < nowTime);
                     slotBookings.forEach((b) => {
                       allBookings.push({ key, booking: b, dateStrPart, hourPart, isPast });
                     });
@@ -618,7 +634,7 @@ function DashboardContent() {
                               ? 'text-brand-sage bg-brand-sage/10'
                               : 'text-brand-coral bg-brand-coral/5'
                           }`}>
-                            {dateStrPart} · {hourPart}:00
+                            {dateStrPart} · {formatHour(hourPart)}
                           </span>
                           {isPast && (
                             <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Completed</span>
@@ -715,12 +731,12 @@ function DashboardContent() {
                         </div>
                       ))}
                       
-                      {rawBookings.length < 2 && (
+                      {rawBookings.length < 1 && (
                         <button
                           onClick={() => handleOpenSlot(d, h)}
                           className="w-full text-center py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white transition-all font-bold text-[10px] shadow-sm cursor-pointer"
                         >
-                          + Open ({rawBookings.length}/2)
+                          + Open
                         </button>
                       )}
                     </td>

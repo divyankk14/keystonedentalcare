@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
+import DoctorIntro from './components/DoctorIntro';
 import Services from './components/Services';
 import BeforeAfter from './components/BeforeAfter';
 import Reviews from './components/Reviews';
@@ -30,6 +31,7 @@ export default function App() {
         {view === 'book' ? (
           <main>
             <Hero />
+            <DoctorIntro />
             <Services />
             <BeforeAfter />
             <Reviews />

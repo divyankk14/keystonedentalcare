@@ -1,5 +1,6 @@
 import React from 'react';
-import { Star, Shield, Award, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
+import dentalImplantIcon from '../../icon/dental-implant for hero page only.png';
 
 export default function Hero() {
   const scrollToBooking = (e) => {
@@ -22,18 +23,6 @@ export default function Hero() {
           {/* Hero text content */}
           <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left">
             
-            {/* Rating badge */}
-            <div className="inline-flex items-center gap-1.5 bg-white/10 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide text-brand-sage mb-6">
-              <span className="flex text-brand-coral">
-                <Star size={12} fill="currentColor" />
-                <Star size={12} fill="currentColor" />
-                <Star size={12} fill="currentColor" />
-                <Star size={12} fill="currentColor" />
-                <Star size={12} fill="currentColor" />
-              </span>
-              <span className="text-brand-ivory font-medium">4.9★ Google Business (150+ reviews)</span>
-            </div>
-
             {/* Headline */}
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.15] mb-6 text-brand-ivory">
               A healthier, brighter smile starts here.
@@ -41,7 +30,7 @@ export default function Hero() {
 
             {/* Subtitle */}
             <p className="text-brand-sage text-sm sm:text-base lg:text-lg max-w-xl mb-8 font-light leading-relaxed">
-              Experience modern, personalized dental care with Dr. Sayali Dethe at Keystone Dental Care. We combine advanced clinical technology with a warm, patient-first approach.
+              Experience modern, personalized dental care with Dr. Sayali Dethe at Keystone Dental Care. We combine advanced dental technology with a warm, patient-centred approach to deliver exceptional care.
             </p>
 
             {/* CTAs */}
@@ -69,14 +58,14 @@ export default function Hero() {
             {/* Trust points */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12 w-full pt-8 border-t border-brand-sage/10 text-xs">
               <div className="flex flex-col items-center lg:items-start gap-1">
-                <Shield className="text-brand-coral" size={18} />
+                <img src="https://cdn-icons-png.flaticon.com/512/13505/13505642.png" alt="Steam autoclave" className="h-[18px] w-[18px] object-contain" />
                 <span className="font-bold mt-1 text-brand-ivory">Sterilized environment</span>
                 <span className="text-brand-sage text-[10px]">Strict safety protocols</span>
               </div>
               <div className="flex flex-col items-center lg:items-start gap-1">
-                <Award className="text-brand-coral" size={18} />
-                <span className="font-bold mt-1 text-brand-ivory">Advanced implants</span>
-                <span className="text-brand-sage text-[10px]">Painless technology</span>
+                <img src={dentalImplantIcon} alt="Dental implant" className="h-[18px] w-[18px] object-contain" />
+                <span className="font-bold mt-1 text-brand-ivory">Dental Implants</span>
+                <span className="text-brand-sage text-[10px]">Advanced technique</span>
               </div>
               <div className="flex flex-col items-center lg:items-start gap-1">
                 <Calendar className="text-brand-coral" size={18} />
