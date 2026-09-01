@@ -794,14 +794,14 @@ function SlotModal({ date, hour, existing, onSave, onCancel, onClose }) {
           </button>
         </div>
         
-        <p className="text-[11px] text-brand-sage font-medium uppercase tracking-wider mb-6">
+        <p className="text-[13px] text-brand-tealDeep font-bold uppercase tracking-wider mb-6">
           {dayLabel(date)}, {dateLabel(date)} at {formatHour(hour)}
         </p>
 
         <form onSubmit={handleSave}>
           <div className="flex flex-col gap-4 mb-5">
             <div>
-              <label htmlFor="modal-name" className="block text-[10px] font-bold uppercase tracking-widest text-brand-sage mb-1">
+              <label htmlFor="modal-name" className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1">
                 Patient Name
               </label>
               <input
@@ -816,7 +816,7 @@ function SlotModal({ date, hour, existing, onSave, onCancel, onClose }) {
             </div>
 
             <div>
-              <label htmlFor="modal-phone" className="block text-[10px] font-bold uppercase tracking-widest text-brand-sage mb-1">
+              <label htmlFor="modal-phone" className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1">
                 Phone Number
               </label>
               <input
@@ -832,7 +832,7 @@ function SlotModal({ date, hour, existing, onSave, onCancel, onClose }) {
             </div>
 
             <div>
-              <label htmlFor="modal-notes" className="block text-[10px] font-bold uppercase tracking-widest text-brand-sage mb-1">
+              <label htmlFor="modal-notes" className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1">
                 Admin Notes (Optional)
               </label>
               <textarea
