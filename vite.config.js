@@ -7,10 +7,10 @@ export default defineConfig({
   server: {
     allowedHosts: ['.loca.lt'],
     proxy: {
-      '/api/sms': {
+      '/api/fast2sms': {
         target: 'https://www.fast2sms.com/dev/bulkV2',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/sms/, '')
+        rewrite: (path) => path.replace(/^\/api\/fast2sms/, '')
       }
     }
   }

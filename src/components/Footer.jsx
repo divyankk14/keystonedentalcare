@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, MapPin, Clock, MessageSquare, ExternalLink } from 'lucide-react';
+import { Phone, MapPin, Clock, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -33,7 +33,9 @@ export default function Footer() {
                     rel="noopener noreferrer"
                     className="text-brand-sage hover:text-brand-ivory transition-colors leading-relaxed"
                   >
-                    Shop No. 5, Laxmi Narayan C.H.S Ltd, J.A. Raul Marg, Off Sayani Road, Next to Elanza Tower, Prabhadevi, Mumbai, Maharashtra 400025
+                    Shop No. 5, Laxmi Narayan C.H.S Ltd, J.A. Raul Marg, Off Sayani Road, Prabhadevi, Mumbai, Maharashtra 400025 Landmark: Sigma Estate II
+
+
                     <ExternalLink size={10} className="inline ml-1" />
                   </a>
                 </div>

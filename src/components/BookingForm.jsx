@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Phone, Check, CalendarDays, Loader2 } from 'lucide-react';
+import { User, Phone, Check, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { sendSMS } from '../lib/sms';
 
@@ -91,7 +91,7 @@ export default function BookingForm() {
             .from('bookings')
             .select('time_slot')
             .eq('booking_date', dateStr)
-            .eq('status', 'booked');
+            .in('status', ['booked', 'blocked']);
 
           if (error) throw error;
           if (active) {
@@ -140,7 +140,7 @@ export default function BookingForm() {
           return kDate === dateStr && kHour === selectedHour && localBookings[k].status !== 'cancelled';
         });
         if (alreadyBooked) {
-          throw new Error('This slot was just booked by another patient. Please select another slot.');
+          throw new Error('This slot is unavailable or blocked. Please select another slot.');
         }
 
         // Insert booking
@@ -162,18 +162,18 @@ export default function BookingForm() {
       } else {
         // Real Supabase Flow with race-condition verification
         
-        // 1. Check if slot is already occupied
+        // 1. Check if slot is already occupied or blocked
         const { data: existing, error: checkError } = await supabase
           .from('bookings')
           .select('id')
           .eq('booking_date', dateStr)
           .eq('time_slot', selectedHour)
-          .eq('status', 'booked')
+          .in('status', ['booked', 'blocked'])
           .maybeSingle();
 
         if (checkError) throw checkError;
         if (existing) {
-          throw new Error('This slot was just booked by another patient. Please select another slot.');
+          throw new Error('This slot is unavailable or blocked. Please select another slot.');
         }
 
         // 2. Insert new booking
@@ -198,17 +198,26 @@ export default function BookingForm() {
         });
       }
 
-      // Send SMS Notifications
+      // Send SMS Notifications via Fast2SMS
       const formattedDate = `${dayLabel(selectedDate)}, ${dateLabel(selectedDate)}`;
       const formattedTime = formatHour(selectedHour);
       
-      const clientMsg = `Hi ${name.trim()}, your appointment with Dr. Sayali Dethe at Keystone Dental Care is confirmed for ${formattedDate} at ${formattedTime}.`;
-      await sendSMS(phone.trim(), clientMsg);
+      // 1. Patient SMS
+      const smsMsg = `Hi ${name.trim()}, your appointment with Dr. Sayali Dethe at Keystone Dental Care is confirmed for ${formattedDate} at ${formattedTime}.`;
+      
+      // 2. Admin Alert SMS
+      const adminPhone = import.meta.env.VITE_ADMIN_PHONE_NUMBER || '7506903401';
+      const adminSmsMsg = `New Booking Alert: ${name.trim()} (${phone.trim()}) has booked an appointment for ${formattedDate} at ${formattedTime}.`;
 
-      const adminPhone = import.meta.env.VITE_ADMIN_PHONE_NUMBER;
-      if (adminPhone) {
-        const adminMsg = `New Booking: ${name.trim()} (${phone.trim()}) on ${formattedDate} at ${formattedTime}.`;
-        await sendSMS(adminPhone, adminMsg);
+      try {
+        const [patientRes, adminRes] = await Promise.all([
+          sendSMS(phone.trim(), smsMsg),
+          sendSMS(adminPhone, adminSmsMsg)
+        ]);
+        console.log('[Fast2SMS Patient Response]', patientRes);
+        console.log('[Fast2SMS Admin Response]', adminRes);
+      } catch (err) {
+        console.error('Failed to send SMS:', err);
       }
 
       // Reset form fields
@@ -256,6 +265,8 @@ export default function BookingForm() {
             <span className="font-semibold text-brand-tealDeep">{formatHour(confirmed.hour)}</span>
           </div>
         </div>
+
+
 
         <button
           onClick={() => setConfirmed(null)}

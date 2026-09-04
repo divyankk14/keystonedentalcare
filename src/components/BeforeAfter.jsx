@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function BeforeAfter() {
@@ -10,9 +10,9 @@ export default function BeforeAfter() {
 
   const cases = [
     {
-      title: 'Smile Realignment & Braces',
-      category: 'Orthodontics',
-      description: 'Correction of crowded teeth and structural alignment.',
+      title: 'Gingival Depigmentation',
+      category: 'Cosmetic',
+      description: 'Minimally invasive aesthetic gum treatment to reduce pigmentation and enhance your smile.',
       image: '/images/before after/1000293878.jpg'
     },
     {
@@ -40,9 +40,9 @@ export default function BeforeAfter() {
       image: '/images/before after/1000289706.jpg'
     },
     {
-      title: 'Gingival Depigmentation',
+      title: 'Teeth Whitening',
       category: 'Cosmetic',
-      description: 'Minimally invasive aesthetic gum treatment to reduce pigmentation and enhance your smile.',
+      description: 'Brighten your teeth and achieve a visibly whiter, more confident smile.',
       image: '/images/before after/1000293912.jpg'
     },
     {
@@ -68,6 +68,12 @@ export default function BeforeAfter() {
       category: 'Oral Surgery',
       description: 'Safe and gentle removal of teeth that are non-restorable.',
       image: '/images/before after/InShot_20260715_193255696.jpg'
+    },
+    {
+      title: 'Dental Bridge',
+      category: 'Prosthodontics',
+      description: 'Replacing missing teeth to restore your smile, function, and natural appearance.',
+      image: '/images/before after/1000293906.jpg'
     }
   ];
 

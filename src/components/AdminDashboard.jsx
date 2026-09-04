@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, X, Trash2, Pencil, CalendarDays, Loader2, RefreshCw, Search, Move } from 'lucide-react';
+import { Lock, X, Trash2, Pencil, Loader2, RefreshCw, Search, Move, Ban, CalendarX, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { sendSMS } from '../lib/sms';
 
@@ -120,6 +120,7 @@ function DashboardContent() {
   const [bookings, setBookings] = useState({});
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(null); // { date, hour, existingBooking }
+  const [blockModal, setBlockModal] = useState(null); // { type: 'all' | 'shift' | 'range' }
   const [error, setError] = useState('');
   
   // Search state
@@ -175,6 +176,7 @@ function DashboardContent() {
               name: localData[k].name,
               phone: localData[k].phone,
               notes: localData[k].notes || '',
+              status: localData[k].status || 'booked',
               created_at: localData[k].created_at
             });
           }
@@ -184,10 +186,10 @@ function DashboardContent() {
         // Fetch from Supabase
         const { data, error: fetchErr } = await supabase
           .from('bookings')
-          .select('id, booking_date, time_slot, patient_name, phone, notes')
+          .select('id, booking_date, time_slot, patient_name, phone, notes, status')
           .gte('booking_date', startStr)
           .lte('booking_date', endStr)
-          .eq('status', 'booked');
+          .in('status', ['booked', 'blocked']);
 
         if (fetchErr) throw fetchErr;
 
@@ -199,7 +201,8 @@ function DashboardContent() {
             id: row.id,
             name: row.patient_name,
             phone: row.phone,
-            notes: row.notes || ''
+            notes: row.notes || '',
+            status: row.status || 'booked'
           });
         });
         setBookings(mapped);
@@ -319,18 +322,178 @@ function DashboardContent() {
         if (cancelErr) throw cancelErr;
       }
 
-      // Send SMS
+      // Send SMS Cancellation Notice via Fast2SMS
       if (modal.existing?.phone) {
         const formattedDate = `${dayLabel(modal.date)}, ${dateLabel(modal.date)}`;
         const formattedTime = formatHour(modal.hour);
-        const cancelMsg = `Hi ${modal.existing.name}, your appointment at Keystone Dental Care on ${formattedDate} at ${formattedTime} has been cancelled. Please contact us to reschedule.`;
-        await sendSMS(modal.existing.phone, cancelMsg);
+        const cancelMsg = `Hi ${modal.existing.name}, your appointment at Keystone Dental Care on ${formattedDate} at ${formattedTime} has been cancelled. Please visit keystonedentalcare.in to reschedule.`;
+        sendSMS(modal.existing.phone, cancelMsg).catch(err => {
+          console.error('Failed to send cancellation SMS:', err);
+        });
       }
 
       setModal(null);
       loadBookings();
     } catch (err) {
       alert('Failed to cancel appointment: ' + err.message);
+    }
+  };
+
+  const handleApplyBlock = async ({ dateStr, mode, shift, startHour, endHour, reason }) => {
+    try {
+      let slotsToBlock = [];
+      if (mode === 'all') {
+        slotsToBlock = [...SLOT_HOURS];
+      } else if (mode === 'shift') {
+        if (shift === 'morning') {
+          slotsToBlock = SLOT_HOURS.filter(h => h >= 1000 && h <= 1330);
+        } else {
+          slotsToBlock = SLOT_HOURS.filter(h => h >= 1700 && h <= 2030);
+        }
+      } else if (mode === 'range') {
+        const s = parseInt(startHour, 10);
+        const e = parseInt(endHour, 10);
+        slotsToBlock = SLOT_HOURS.filter(h => h >= s && h <= e);
+      }
+
+      if (slotsToBlock.length === 0) {
+        alert('No valid time slots found in the selected range.');
+        return;
+      }
+
+      const noteText = reason || 'Blocked timing';
+
+      // 1. OPTIMISTIC UI UPDATE (Instant 0ms screen response!)
+      setBookings(prev => {
+        const next = { ...prev };
+        slotsToBlock.forEach(h => {
+          const key = `${dateStr}_${h}`;
+          next[key] = [{
+            id: `blocked_${dateStr}_${h}`,
+            name: 'Blocked Slot',
+            phone: '',
+            notes: noteText,
+            status: 'blocked'
+          }];
+        });
+        return next;
+      });
+
+      // Close modal immediately for instant feedback
+      setBlockModal(null);
+
+      const isPlaceholder = supabase.supabaseUrl.includes('placeholder.supabase.co');
+
+      if (isPlaceholder) {
+        const localData = JSON.parse(localStorage.getItem('keystone_bookings') || '{}');
+        slotsToBlock.forEach(h => {
+          const key = `${dateStr}_${h}`;
+          localData[key] = {
+            id: `blocked_${dateStr}_${h}`,
+            name: 'Blocked Slot',
+            phone: '',
+            notes: noteText,
+            status: 'blocked',
+            date: dateStr,
+            hour: h,
+            created_at: new Date().toISOString()
+          };
+        });
+        localStorage.setItem('keystone_bookings', JSON.stringify(localData));
+      } else {
+        // 2. FAST PARALLEL BATCH DB SYNC
+        const { data: existingRows } = await supabase
+          .from('bookings')
+          .select('id, time_slot')
+          .eq('booking_date', dateStr);
+
+        const existingMap = {};
+        (existingRows || []).forEach(r => {
+          if (!existingMap[r.time_slot]) existingMap[r.time_slot] = [];
+          existingMap[r.time_slot].push(r.id);
+        });
+
+        const promises = slotsToBlock.map(async (h) => {
+          const ids = existingMap[h] || [];
+          if (ids.length > 0) {
+            await supabase
+              .from('bookings')
+              .update({
+                patient_name: 'Blocked Slot',
+                phone: '',
+                status: 'blocked',
+                notes: noteText
+              })
+              .eq('id', ids[0]);
+
+            if (ids.length > 1) {
+              await supabase.from('bookings').delete().in('id', ids.slice(1));
+            }
+          } else {
+            const { error: insErr } = await supabase.from('bookings').insert([
+              {
+                booking_date: dateStr,
+                time_slot: h,
+                patient_name: 'Blocked Slot',
+                phone: '',
+                status: 'blocked',
+                notes: noteText
+              }
+            ]);
+
+            if (insErr) {
+              await supabase.from('bookings').insert([
+                {
+                  booking_date: dateStr,
+                  time_slot: h,
+                  patient_name: 'Blocked Slot',
+                  phone: '',
+                  status: 'booked',
+                  notes: noteText
+                }
+              ]);
+            }
+          }
+        });
+
+        await Promise.all(promises);
+      }
+    } catch (err) {
+      console.error('Error applying block:', err);
+      alert('Failed to block slots: ' + (err.message || 'Unknown error'));
+      loadBookings();
+    }
+  };
+
+  const handleUnblockSlot = async (booking, key) => {
+    if (!window.confirm('Unblock this slot to allow patient bookings?')) return;
+    try {
+      // Optimistic local removal (0ms)
+      setBookings(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+
+      const isPlaceholder = supabase.supabaseUrl.includes('placeholder.supabase.co');
+
+      if (isPlaceholder) {
+        const localData = JSON.parse(localStorage.getItem('keystone_bookings') || '{}');
+        Object.keys(localData).forEach((k) => {
+          if (localData[k].id === booking.id || k === key || k.startsWith(`${key}_`)) {
+            localData[k].status = 'cancelled';
+          }
+        });
+        localStorage.setItem('keystone_bookings', JSON.stringify(localData));
+      } else {
+        await supabase
+          .from('bookings')
+          .update({ status: 'cancelled' })
+          .eq('id', booking.id);
+      }
+    } catch (err) {
+      alert('Failed to unblock slot: ' + err.message);
+      loadBookings();
     }
   };
 
@@ -442,7 +605,8 @@ function DashboardContent() {
       const hourPart = parseInt(key.substring(underscoreIdx + 1), 10);
       
       if (dateStrPart > nowStr || (dateStrPart === nowStr && hourPart >= nowTime)) {
-        count += (bookings[key] || []).length;
+        const patientBookings = (bookings[key] || []).filter(b => b.status !== 'blocked' && b.name !== 'Blocked Slot');
+        count += patientBookings.length;
       }
     });
     return count;
@@ -572,6 +736,33 @@ function DashboardContent() {
             </button>
           </div>
         </div>
+
+        {/* Slot Blocking & Cancellation Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-3.5 bg-red-50/60 border border-red-100 rounded-2xl">
+          <span className="text-xs font-bold text-red-800 uppercase tracking-wider flex items-center gap-1.5">
+            <Ban size={15} className="text-red-600" /> Slot Controls & Blocked Timings
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setBlockModal({ type: 'all' })}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+            >
+              <CalendarX size={13} /> Cancel All Slots
+            </button>
+            <button
+              onClick={() => setBlockModal({ type: 'shift' })}
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+            >
+              <Clock size={13} /> Cancel Morning / Evening
+            </button>
+            <button
+              onClick={() => setBlockModal({ type: 'range' })}
+              className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+            >
+              <Ban size={13} /> Cancel Time Slot Range
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* All Bookings List View Modal — shows past + upcoming as permanent records */}
@@ -598,7 +789,7 @@ function DashboardContent() {
                     if (underscoreIdx === -1) return;
                     const dateStrPart = key.substring(0, underscoreIdx);
                     const hourPart = parseInt(key.substring(underscoreIdx + 1), 10);
-                    const slotBookings = bookings[key] || [];
+                    const slotBookings = (bookings[key] || []).filter(b => b.status !== 'blocked' && b.name !== 'Blocked Slot');
                     const isPast = dateStrPart < nowStr || (dateStrPart === nowStr && hourPart < nowTime);
                     slotBookings.forEach((b) => {
                       allBookings.push({ key, booking: b, dateStrPart, hourPart, isPast });
@@ -692,7 +883,7 @@ function DashboardContent() {
                 
                 {dates.map((d) => {
                   const key = `${dateKey(d)}_${h}`;
-                  const cellBookings = filteredBookings[key] || [];
+                  const cellBookings = (filteredBookings[key] || []).slice(0, 1);
                   const rawBookings = bookings[key] || [];
                   const isDragOver = dragOverCell === key;
                   
@@ -706,30 +897,63 @@ function DashboardContent() {
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => handleDrop(e, d, h)}
                     >
-                      {cellBookings.map((booking, idx) => (
-                        <div
-                          key={idx}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, key, booking)}
-                          onClick={() => handleOpenSlot(d, h, booking)}
-                          className="w-full text-left rounded-xl p-2.5 transition-all text-xs bg-blue-600 hover:bg-blue-700 border border-blue-800 text-white cursor-grab active:cursor-grabbing group relative shadow-sm select-none"
-                          title="Drag to reschedule"
-                        >
-                          <div className="absolute right-1 top-1 text-white/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Move size={10} />
-                          </div>
+                      {cellBookings.map((booking, idx) => {
+                        const isBlocked = booking.status === 'blocked' || booking.name === 'Blocked Slot';
+                        if (isBlocked) {
+                          return (
+                            <div
+                              key={idx}
+                              className="w-full text-left rounded-xl p-2 transition-all text-xs bg-red-500 hover:bg-red-600 border border-red-700 text-white flex flex-col justify-between shadow-xs"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+                                  <Ban size={10} /> Blocked
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUnblockSlot(booking, key);
+                                  }}
+                                  className="text-[9px] bg-white/20 hover:bg-white/30 text-white font-bold px-1.5 py-0.5 rounded-md cursor-pointer transition-all"
+                                  title="Unblock this slot"
+                                >
+                                  Unblock
+                                </button>
+                              </div>
+                              {booking.notes && (
+                                <span className="text-[9px] text-white/90 italic mt-0.5 truncate">
+                                  "{booking.notes}"
+                                </span>
+                              )}
+                            </div>
+                          );
+                        }
 
-                          <div className="flex flex-col">
-                            <span className="font-bold truncate text-[11px] pr-2">{booking.name}</span>
-                            <span className="text-[10px] opacity-90 mt-0.5">{booking.phone}</span>
-                            {booking.notes && (
-                              <span className="text-[9px] text-brand-ivory italic mt-1 truncate">
-                                "{booking.notes}"
-                              </span>
-                            )}
+                        return (
+                          <div
+                            key={idx}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, key, booking)}
+                            onClick={() => handleOpenSlot(d, h, booking)}
+                            className="w-full text-left rounded-xl p-2.5 transition-all text-xs bg-blue-600 hover:bg-blue-700 border border-blue-800 text-white cursor-grab active:cursor-grabbing group relative shadow-sm select-none"
+                            title="Drag to reschedule"
+                          >
+                            <div className="absolute right-1 top-1 text-white/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Move size={10} />
+                            </div>
+
+                            <div className="flex flex-col">
+                              <span className="font-bold truncate text-[11px] pr-2">{booking.name}</span>
+                              <span className="text-[10px] opacity-90 mt-0.5">{booking.phone}</span>
+                              {booking.notes && (
+                                <span className="text-[9px] text-brand-ivory italic mt-1 truncate">
+                                  "{booking.notes}"
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       
                       {rawBookings.length < 1 && (
                         <button
@@ -757,6 +981,16 @@ function DashboardContent() {
           onSave={handleSaveBooking}
           onCancel={modal.existing ? handleCancelBooking : null}
           onClose={() => setModal(null)}
+        />
+      )}
+
+      {/* Block Slots Modal */}
+      {blockModal && (
+        <BlockSlotsModal
+          initialType={blockModal.type}
+          dates={dates}
+          onApply={handleApplyBlock}
+          onClose={() => setBlockModal(null)}
         />
       )}
     </div>
@@ -853,20 +1087,236 @@ function SlotModal({ date, hour, existing, onSave, onCancel, onClose }) {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="flex-1 bg-brand-teal hover:bg-brand-light-teal text-brand-ivory py-2.5 rounded-full text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
+              className="flex-1 bg-brand-teal hover:bg-brand-light-teal text-brand-ivory py-2.5 rounded-full text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Pencil size={12} /> Save Changes
             </button>
             
+
+
             {onCancel && (
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 bg-brand-coral/10 hover:bg-brand-coral/15 text-brand-coral rounded-full text-xs font-bold transition-all flex items-center gap-1"
+                className="px-4 bg-brand-coral/10 hover:bg-brand-coral/15 text-brand-coral rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
               >
                 <Trash2 size={12} /> Cancel
               </button>
             )}
+          </div>
+        </form>
+
+      </div>
+    </div>
+  );
+}
+
+// Modal component for blocking/cancelling slots
+function BlockSlotsModal({ initialType, dates = [], onApply, onClose }) {
+  const [mode, setMode] = useState(initialType || 'all'); // 'all', 'shift', 'range'
+  const [dateStr, setDateStr] = useState(dates[0] ? dateKey(dates[0]) : new Date().toISOString().split('T')[0]);
+  const [shift, setShift] = useState('morning'); // 'morning', 'evening'
+  const [startHour, setStartHour] = useState(1100);
+  const [endHour, setEndHour] = useState(1300);
+  const [reason, setReason] = useState('Blocked timing');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onApply({
+      dateStr,
+      mode,
+      shift,
+      startHour,
+      endHour,
+      reason: reason.trim()
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-[100] bg-black/60 backdrop-blur-xs">
+      <div className="w-full max-w-md rounded-3xl p-6 bg-white border border-brand-sage/10 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-brand-sage/10">
+          <h3 className="font-serif text-lg font-bold text-red-700 flex items-center gap-2">
+            <Ban size={18} /> Block / Cancel Time Slots
+          </h3>
+          <button onClick={onClose} className="p-1 hover:bg-brand-ivory rounded-full text-brand-sage transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-4 mb-6">
+            
+            {/* Mode selection tabs */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1.5">
+                Cancellation Type
+              </label>
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-brand-ivory/80 rounded-xl border border-brand-sage/15 text-[11px] font-bold text-center">
+                <button
+                  type="button"
+                  onClick={() => setMode('all')}
+                  className={`py-2 rounded-lg transition-all ${mode === 'all' ? 'bg-red-600 text-white shadow-xs' : 'text-brand-dark hover:bg-white/50'}`}
+                >
+                  Cancel All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode('shift')}
+                  className={`py-2 rounded-lg transition-all ${mode === 'shift' ? 'bg-amber-600 text-white shadow-xs' : 'text-brand-dark hover:bg-white/50'}`}
+                >
+                  Shift
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode('range')}
+                  className={`py-2 rounded-lg transition-all ${mode === 'range' ? 'bg-purple-600 text-white shadow-xs' : 'text-brand-dark hover:bg-white/50'}`}
+                >
+                  Time Range
+                </button>
+              </div>
+            </div>
+
+            {/* Target Date */}
+            <div>
+              <label htmlFor="block-date" className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1.5">
+                Target Date
+              </label>
+              
+              {/* Quick Date Pills for current week */}
+              {dates.length > 0 && (
+                <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 scrollbar-thin">
+                  {dates.map((d) => {
+                    const dk = dateKey(d);
+                    const isSel = dateStr === dk;
+                    return (
+                      <button
+                        type="button"
+                        key={dk}
+                        onClick={() => setDateStr(dk)}
+                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all border ${
+                          isSel ? 'bg-brand-teal text-white border-brand-teal' : 'bg-brand-ivory/60 text-brand-dark border-brand-sage/20 hover:border-brand-teal/40'
+                        }`}
+                      >
+                        {dayLabel(d)} {dateLabel(d).split(' ')[1]}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <input
+                id="block-date"
+                type="date"
+                required
+                value={dateStr}
+                onChange={(e) => setDateStr(e.target.value)}
+                className="w-full text-xs rounded-xl border border-brand-sage/20 px-3 py-2.5 outline-none focus:border-brand-coral transition-colors font-semibold text-brand-dark bg-white"
+              />
+            </div>
+
+            {/* Shift option */}
+            {mode === 'shift' && (
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1.5">
+                  Select Shift
+                </label>
+                <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+                  <label className={`flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-all ${shift === 'morning' ? 'border-amber-600 bg-amber-50 text-amber-900 font-bold' : 'border-brand-sage/20'}`}>
+                    <input
+                      type="radio"
+                      name="shift"
+                      value="morning"
+                      checked={shift === 'morning'}
+                      onChange={() => setShift('morning')}
+                      className="hidden"
+                    />
+                    <span>Morning (10 AM - 2 PM)</span>
+                  </label>
+                  <label className={`flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-all ${shift === 'evening' ? 'border-amber-600 bg-amber-50 text-amber-900 font-bold' : 'border-brand-sage/20'}`}>
+                    <input
+                      type="radio"
+                      name="shift"
+                      value="evening"
+                      checked={shift === 'evening'}
+                      onChange={() => setShift('evening')}
+                      className="hidden"
+                    />
+                    <span>Evening (5 PM - 9 PM)</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Range options */}
+            {mode === 'range' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="block-start" className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1">
+                    Start Time
+                  </label>
+                  <select
+                    id="block-start"
+                    value={startHour}
+                    onChange={(e) => setStartHour(parseInt(e.target.value, 10))}
+                    className="w-full text-xs rounded-xl border border-brand-sage/20 px-3 py-2.5 outline-none focus:border-brand-coral transition-colors font-semibold text-brand-dark"
+                  >
+                    {SLOT_HOURS.map(h => (
+                      <option key={h} value={h}>{formatHour(h)}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="block-end" className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1">
+                    End Time
+                  </label>
+                  <select
+                    id="block-end"
+                    value={endHour}
+                    onChange={(e) => setEndHour(parseInt(e.target.value, 10))}
+                    className="w-full text-xs rounded-xl border border-brand-sage/20 px-3 py-2.5 outline-none focus:border-brand-coral transition-colors font-semibold text-brand-dark"
+                  >
+                    {SLOT_HOURS.map(h => (
+                      <option key={h} value={h}>{formatHour(h)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Reason / Notes */}
+            <div>
+              <label htmlFor="block-reason" className="block text-xs font-bold uppercase tracking-widest text-brand-tealDeep mb-1">
+                Reason / Note (Optional)
+              </label>
+              <input
+                id="block-reason"
+                type="text"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g. Personal emergency, Doctor unavailable"
+                className="w-full text-xs rounded-xl border border-brand-sage/20 px-3 py-2.5 outline-none focus:border-brand-coral transition-colors text-brand-dark font-medium"
+              />
+            </div>
+
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-full text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Ban size={14} /> Confirm Block
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-xs font-bold transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
           </div>
         </form>
 

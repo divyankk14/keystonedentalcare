@@ -8,7 +8,7 @@ import scalingIcon from '../../icon/dental-scalingand polishing.png';
 import whiteningIcon from '../../icon/whitening.png';
 import bridgeIcon from '../../icon/dental-bridge.png';
 import veneersIcon from '../../icon/dental-veneer.png';
-import cosmeticIcon from '../../icon/cosmetic dentistry.png';
+import cosmeticIcon from '../../icon/noun_cosmeticdentistry_2051516_@700.png';
 import gumIcon from '../../icon/dental gum.png';
 import denturesIcon from '../../icon/denture.png';
 import dentalImplantIcon from '../../icon/dental-implant.png';
@@ -35,7 +35,7 @@ export default function Services() {
     {
       id: 'checkups',
       name: 'Check-ups',
-      short: 'Regular dental Check-ups to keep your teeth and gums healthy.',
+      short: 'Regular dental check-ups to keep your teeth and gums healthy.',
       details: 'Routine dental check-ups include oral examinations, oral cancer screening, and overall evaluation of your teeth, gums, and bite to detect and prevent problems early.',
       icon: '🔎',
     },
@@ -99,7 +99,7 @@ export default function Services() {
       id: 'gum',
       name: 'Gum Disease Treatment',
       short: 'Care to stop gum bleeding, infections, and swelling.',
-      details: 'Treatments targeting gingivitis or periodontitis, including subgingival scaling and deep root planing and specialized antimicrobial care to stabilize loose teeth and restore gum health.',
+      details: 'Treatments targeting gingivitis or periodontitis, including subgingival scaling and root planing and specialized antimicrobial care to stabilize loose teeth and restore gum health.',
       icon: '❤️',
     },
     {

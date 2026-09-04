@@ -64,8 +64,8 @@ export default function Hero() {
               </div>
               <div className="flex flex-col items-center lg:items-start gap-1">
                 <img src={dentalImplantIcon} alt="Dental implant" className="h-[18px] w-[18px] object-contain" />
-                <span className="font-bold mt-1 text-brand-ivory">Dental Implants</span>
-                <span className="text-brand-sage text-[10px]">Advanced technique</span>
+                <span className="font-bold mt-1 text-brand-ivory">Advanced technique</span>
+                <span className="text-brand-sage text-[10px]"> Dental Implants</span>
               </div>
               <div className="flex flex-col items-center lg:items-start gap-1">
                 <Calendar className="text-brand-coral" size={18} />

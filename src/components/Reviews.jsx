@@ -7,25 +7,25 @@ export default function Reviews() {
   const reviewsList = [
     {
       name: 'Gautami Mamidi',
-      text: 'I have done my root canal treatment from Keystone. Dr. Dethe is so polite and gentle. I would highly recommend to keystone dental care clinic.',
+      text: 'I had my root canal treatment done at Keystone. Dr. Dethe is so polite and gentle. I would highly recommend Keystone Dental Care Clinic.',
       rating: 5,
       date: '1 week ago',
     },
     {
       name: 'SHIVANI GAIKWAD',
-      text: "I had a great experience with Dr. Sayli dethe. She's very caring and gentle, making me feel comfortable during my appointment. Her friendly demeanor and willingness to listen put me at ease. The staff was also welcoming and helpful. I appreciate her compassionate approach and recommend her to anyone looking for a kind and understanding dentist!.",
+      text: "I had a great experience with Dr. Sayali Dethe. She's very caring and gentle, making me feel comfortable during my appointment. Her friendly demeanor and willingness to listen put me at ease. The staff was also welcoming and helpful. I appreciate her compassionate approach and recommend her to anyone looking for a kind and understanding dentist!",
       rating: 5,
       date: '3 weeks ago',
     },
     {
       name: 'Mansha Tungekar',
-      text: 'Visited the clinic. Very warm and nice ambience. Dr. Sayali Dethe is also very cordial and understands patients need.',
+      text: 'Visited the clinic and had a very warm and pleasant experience. The ambience was very nice. Dr. Sayali Dethe is also very cordial and understands patients’ needs.',
       rating: 5,
       date: '1 month ago',
     },
     {
       name: 'Amit Bikram',
-      text: "Amazing Hospitality, I recently had my root canal treatment there. Amazing work by the doctor i must say. She's very professional.",
+      text: "Amazing hospitality! I recently had my root canal treatment there. Amazing work by the doctor, I must say. She's very professional.",
       rating: 5,
       date: '2 months ago',
     },
@@ -37,13 +37,13 @@ export default function Reviews() {
     },
     {
       name: 'Priyanka Shete',
-      text: 'My experience was very Good, Doctor is very cooperative and experience',
+      text: 'My experience was very good. The doctor is very cooperative and experienced.',
       rating: 5,
       date: '3 weeks ago',
     },
     {
       name: 'Meena Kedari',
-      text: 'I did my teeth cleaning. I had a good experience. I recommend Dr. Sayali for her professionalism.',
+      text: 'I had my teeth cleaned and had a good experience. I recommend Dr. Sayali for her professionalism.',
       rating: 5,
       date: 'Recent',
     },
@@ -85,16 +85,16 @@ export default function Reviews() {
             </div>
 
             {/* Review text */}
-            <p className="text-brand-dark/90 text-sm sm:text-base font-light italic leading-relaxed mb-6">
+            <p className="text-brand-dark text-base sm:text-lg font-medium italic leading-relaxed mb-6">
               "{reviewsList[activeIdx].text}"
             </p>
 
             {/* Reviewer Details */}
             <div className="flex flex-col items-center">
-              <span className="font-serif font-bold text-brand-tealDeep text-sm">
+              <span className="font-serif font-bold text-brand-tealDeep text-lg">
                 {reviewsList[activeIdx].name}
               </span>
-              <span className="text-[10px] text-brand-sage font-medium uppercase tracking-wider mt-1">
+              <span className="text-xs text-brand-tealDeep/80 font-bold uppercase tracking-wider mt-1">
                 Google Reviewer · {reviewsList[activeIdx].date}
               </span>
             </div>
