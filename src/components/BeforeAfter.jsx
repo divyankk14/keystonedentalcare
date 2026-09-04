@@ -13,7 +13,7 @@ export default function BeforeAfter() {
       title: 'Gingival Depigmentation',
       category: 'Cosmetic',
       description: 'Minimally invasive aesthetic gum treatment to reduce pigmentation and enhance your smile.',
-      image: '/images/before after/1000293878.jpg'
+      image: '/images/before after/1000307343.png'
     },
     {
       title: 'Dental Crowns',
