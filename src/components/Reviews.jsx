@@ -7,45 +7,51 @@ export default function Reviews() {
   const reviewsList = [
     {
       name: 'Gautami Mamidi',
-      text: 'I had my root canal treatment done at Keystone. Dr. Dethe is so polite and gentle. I would highly recommend Keystone Dental Care Clinic.',
+      text: 'I have done my root canal treatment from Keystone. Dr. Dethe is so polite and gentle. I would highly recommend to keystone dental care clinic.',
       rating: 5,
-      date: '1 week ago',
+      date: '2 years ago',
     },
     {
       name: 'SHIVANI GAIKWAD',
       text: "I had a great experience with Dr. Sayali Dethe. She's very caring and gentle, making me feel comfortable during my appointment. Her friendly demeanor and willingness to listen put me at ease. The staff was also welcoming and helpful. I appreciate her compassionate approach and recommend her to anyone looking for a kind and understanding dentist!",
       rating: 5,
-      date: '3 weeks ago',
+      date: '1 year ago',
     },
     {
       name: 'Mansha Tungekar',
-      text: 'Visited the clinic and had a very warm and pleasant experience. The ambience was very nice. Dr. Sayali Dethe is also very cordial and understands patients’ needs.',
+      text: 'Visited the clinic. Very warm and nice ambience. Dr. Sayali Dethe is also very cordial and understands patients need.',
       rating: 5,
-      date: '1 month ago',
+      date: '2 years ago',
     },
     {
       name: 'Amit Bikram',
       text: "Amazing hospitality! I recently had my root canal treatment there. Amazing work by the doctor, I must say. She's very professional.",
       rating: 5,
-      date: '2 months ago',
+      date: '2 years ago',
     },
     {
       name: 'Vinit Khanvilkar',
       text: 'The facilities were clean and modern, and the dentist was incredibly knowledgeable and skilled. She took the time to thoroughly explain the treatment plan and address any concerns I had. Throughout the procedure, she was gentle and attentive, making sure I was comfortable at all times.',
       rating: 5,
-      date: 'Recent',
+      date: '2 years ago',
     },
     {
       name: 'Priyanka Shete',
-      text: 'My experience was very good. The doctor is very cooperative and experienced.',
+      text: 'The full review is - My experience was very good. Doctor is very cooperative and experienced. No pain is there while operating, its good.👍🏻',
       rating: 5,
       date: '3 weeks ago',
     },
     {
       name: 'Meena Kedari',
-      text: 'I had my teeth cleaned and had a good experience. I recommend Dr. Sayali for her professionalism.',
+      text: 'I did my teeth cleaning. I had a good experience. I recommend Dr. Sayali for her professionalism.',
       rating: 5,
-      date: 'Recent',
+      date: '1 year ago',
+    },
+    {
+      name: 'kalpana',
+      text: 'I visited for my front tooth filling and the experience was great. Highly recommended. 👍🏻',
+      rating: 5,
+      date: '3 days ago',
     },
   ];
 

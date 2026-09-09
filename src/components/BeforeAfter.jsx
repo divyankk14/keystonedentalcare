@@ -74,6 +74,12 @@ export default function BeforeAfter() {
       category: 'Prosthodontics',
       description: 'Replacing missing teeth to restore your smile, function, and natural appearance.',
       image: '/images/before after/1000293906.jpg'
+    },
+    {
+      title: 'Braces',
+      category: 'Orthodontics',
+      description: 'Braces that align your teeth, improve your bite, transform your smile, and boost your confidence.',
+      image: '/images/before after/1000311222.jpg'
     }
   ];
 
