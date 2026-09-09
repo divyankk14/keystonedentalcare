@@ -12,7 +12,7 @@ export default function Reviews() {
       date: '2 years ago',
     },
     {
-      name: 'SHIVANI GAIKWAD',
+      name: 'Shivani Gaikwad',
       text: "I had a great experience with Dr. Sayali Dethe. She's very caring and gentle, making me feel comfortable during my appointment. Her friendly demeanor and willingness to listen put me at ease. The staff was also welcoming and helpful. I appreciate her compassionate approach and recommend her to anyone looking for a kind and understanding dentist!",
       rating: 5,
       date: '1 year ago',
@@ -37,7 +37,7 @@ export default function Reviews() {
     },
     {
       name: 'Priyanka Shete',
-      text: 'The full review is - My experience was very good. Doctor is very cooperative and experienced. No pain is there while operating, its good.👍🏻',
+      text: 'My experience was very good. Doctor is very cooperative and experienced. No pain is there while operating, its good.👍🏻',
       rating: 5,
       date: '3 weeks ago',
     },
@@ -48,7 +48,7 @@ export default function Reviews() {
       date: '1 year ago',
     },
     {
-      name: 'kalpana',
+      name: 'Kalpana',
       text: 'I visited for my front tooth filling and the experience was great. Highly recommended. 👍🏻',
       rating: 5,
       date: '3 days ago',
