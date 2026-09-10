@@ -274,7 +274,52 @@
 
   </head>
   <body>
-    <div id="root"></div>
+    <style>
+      /* Inline loader — visible only until React mounts and replaces #root contents */
+      body { background-color: #FAF7F0; margin: 0; }
+      .preloader {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        gap: 18px;
+      }
+      .preloader-logo {
+        font-size: 48px;
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+      .preloader-bar {
+        width: 120px;
+        height: 4px;
+        background: #CBD6E2;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .preloader-bar::after {
+        content: "";
+        display: block;
+        width: 40%;
+        height: 100%;
+        background: #193a6f;
+        border-radius: 4px;
+        animation: slide 1s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: .6; transform: scale(1.1); }
+      }
+      @keyframes slide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(300%); }
+      }
+    </style>
+    <div id="root">
+      <div class="preloader">
+        <div class="preloader-logo">🦷</div>
+        <div class="preloader-bar"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
